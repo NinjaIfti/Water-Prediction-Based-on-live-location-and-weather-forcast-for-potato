@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potato Water Requirements Prediction</title>
+    
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqeTZVCENkoMoR7UsEYHNYeQrw8uxzreA&libraries=places"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #map {
+            height: 300px;
+            width: 100%;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .prediction {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0f7fa;
+            border: 1px solid #0097a7;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .forecast {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 600px;
+            margin: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+
+    <script>
+        function initMap() {
+            var map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 23.685, lng: 90.356 },
+                zoom: 8,
+            });
+
+            google.maps.event.addListener(map, "click", function (event) {
+                document.getElementById("latitude").value = event.latLng.lat().toFixed(6);
+                document.getElementById("longitude").value = event.latLng.lng().toFixed(6);
+            });
+        }
+    </script>
+</head>
+
+<body onload="initMap()">
+    <h1>Potato Water Requirements Prediction</h1>
+
+    <form action="{{ url_for('predict') }}" method="post">
+        <label for="soil_type">Soil Type</label>
+        <select name="SOIL_TYPE" id="soil_type" required>
+            <option value="" disabled selected>Select Soil Type</option>
+            <option value="DRY">DRY</option>
+            <option value="HUMID">HUMID</option>
+            <option value="WET">WET</option>
+        </select>
+
+        <label for="region">Region</label>
+        <select name="REGION" id="region" required>
+            <option value="" disabled selected>Select Region</option>
+            <option value="DESERT">DESERT</option>
+            <option value="SEMI ARID">SEMI ARID</option>
+            <option value="SEMI HUMID">SEMI HUMID</option>
+            <option value="HUMID">HUMID</option>
+        </select>
+
+        <label for="weather_condition">Weather Condition</label>
+        <select name="WEATHER_CONDITION" id="weather_condition" required>
+            <option value="" disabled selected>Select Weather Condition</option>
+            <option value="NORMAL">NORMAL</option>
+            <option value="SUNNY">SUNNY</option>
+            <option value="WINDY">WINDY</option>
+            <option value="RAINY">RAINY</option>
+        </select>
+
+        <label for="temp_min">Minimum Temperature (°C)</label>
+        <input type="number" name="TEMP_MIN" id="temp_min" placeholder="Enter minimum temperature" required>
+
+        <label for="temp_max">Maximum Temperature (°C)</label>
+        <input type="number" name="TEMP_MAX" id="temp_max" placeholder="Enter maximum temperature" required>
+
+        <label for="latitude">Latitude</label>
+        <input type="text" name="latitude" id="latitude" placeholder="Click on the map to select latitude" required readonly>
+
+        <label for="longitude">Longitude</label>
+        <input type="text" name="longitude" id="longitude" placeholder="Click on the map to select longitude" required readonly>
+
+        <div id="map"></div>
+
+        <button type="submit">SUBMIT</button>
+    </form>
+
+    <!-- Prediction Result Section -->
+    <div class="prediction">
+        {% if prediction_text %}
+            <h3>Prediction Result:</h3>
+            <p><strong>{{ prediction_text }}</strong></p>
+            <p><strong>{{ weather }}</strong></p>
+        {% endif %}
+    </div>
+
+    <!-- 7-Day Weather Forecast Section -->
+    {% if forecast %}
+    <div class="forecast">
+        <h2>7-Day Weather Forecast</h2>
+        <table>
+            <tr>
+                <th>Day</th>
+                <th>Temperature (°C)</th>
+                <th>Humidity (%)</th>
+                <th>Weather</th>
+            </tr>
+            {% for day in forecast %}
+            <tr>
+                <td>Day {{ loop.index }}</td>
+                <td>{{ day.temp }}</td>
+                <td>{{ day.humidity }}</td>
+                <td>{{ day.weather }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+</body>
+</html>
